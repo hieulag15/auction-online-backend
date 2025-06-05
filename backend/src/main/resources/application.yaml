@@ -89,9 +89,9 @@ quartz:
         dataSource:
           myDS:
           driver: com.mysql.cj.jdbc.Driver
-          URL: jdbc:mysql://localhost:3306/auction_web
-          user: root
-          password: root
+          URL: ${QUARTZ_URL:jdbc:mysql://auctionsession-server.mysql.database.azure.com:3306/auction_web}
+          user: ${DBMS_USERNAME}
+          password: ${DBMS_PASSWORD}
           maxConnections: 5
           validationQuery: select 1
 

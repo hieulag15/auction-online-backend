@@ -9,7 +9,7 @@ server:
 
 spring:
   datasource:
-    url: ${DBMS_CONNECTION}
+    url: jdbc:mysql://auctionsession-server.mysql.database.azure.com:3306/auction_web
     driverClassName: "com.mysql.cj.jdbc.Driver"
     password: ${DBMS_PASSWORD}
     username: ${DBMS_USERNAME}

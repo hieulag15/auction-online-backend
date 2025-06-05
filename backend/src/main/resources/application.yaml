@@ -19,6 +19,7 @@ spring:
     port: 5672
     username: ${RABBIT_USERNAME}
     password: ${RABBIT_PASSWORD}
+    virtual-host: ${RABBIT_USERNAME}
 
   # spring:
   #   datasource:

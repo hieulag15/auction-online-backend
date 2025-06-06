@@ -42,9 +42,9 @@ public class VNPayController {
 
         if ("00".equals(status)) {
             balanceUserService.updateCoinUserVnPay(userId, orderInfo, amount);
-            response.sendRedirect("http://localhost:5173/payment/vn-pay-callback?status=success&amount=" + amount);
+            response.sendRedirect("https://auction-frontend-ebon.vercel.app/payment/vn-pay-callback?status=success&amount=" + amount);
         } else {
-            response.sendRedirect("http://localhost:5173/payment/vn-pay-callback?status=fail");
+            response.sendRedirect("https://auction-frontend-ebon.vercel.app/payment/vn-pay-callback?status=fail");
         }
     }
 }

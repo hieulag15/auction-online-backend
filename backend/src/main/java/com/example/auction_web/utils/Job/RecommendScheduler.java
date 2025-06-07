@@ -15,12 +15,12 @@ import lombok.experimental.FieldDefaults;
 public class RecommendScheduler {
     RecommendService recommendService;
 
-    @Scheduled(cron = "0 59 23 * * ?")
+    @Scheduled(cron = "0 22 00 * * ?")
     public void scheduleUserVectorUpdate() {
         recommendService.batchUpdateUserVectors();
     }
 
-    @Scheduled(cron = "0 59 23 * * ?")
+    @Scheduled(cron = "0 22 00 * * ?")
     public void scheduleAuctionSessionVectorUpdate() {
         recommendService.batchUpdateAuctionSessionVectors();
     }

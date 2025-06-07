@@ -1,6 +1,7 @@
 package com.example.auction_web.service.auth.impl;
 
 import com.example.auction_web.constant.PredefinedRole;
+import com.example.auction_web.dto.request.BalanceUserCreateRequest;
 import com.example.auction_web.dto.request.auth.UserCreateRequest;
 import com.example.auction_web.dto.request.auth.UserUpdateRequest;
 import com.example.auction_web.dto.response.ApiResponse;
@@ -19,6 +20,7 @@ import com.example.auction_web.repository.auth.RoleRepository;
 import com.example.auction_web.repository.auth.UserRepository;
 import com.example.auction_web.repository.chat.ConversationRepository;
 import com.example.auction_web.repository.chat.MessageRepository;
+import com.example.auction_web.service.BalanceUserService;
 import com.example.auction_web.service.EmailVerificationTokenService;
 import com.example.auction_web.service.FileUploadService;
 import com.example.auction_web.service.auth.UserService;
@@ -38,6 +40,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,6 +61,7 @@ public class UserServiceImpl implements UserService {
     FileUploadService fileUploadService;
     MessageRepository messageRepository;
     ConversationRepository conversationRepository;
+    BalanceUserService balanceUserService;
 
     EmailVerificationTokenService emailVerificationTokenService;
 
@@ -78,7 +82,11 @@ public class UserServiceImpl implements UserService {
         } catch (DataIntegrityViolationException exception) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-
+        BalanceUserCreateRequest balanceUserCreateRequest = BalanceUserCreateRequest.builder()
+                .userId(user.getUserId())
+                .accountBalance(BigDecimal.valueOf(0))
+                .build();
+        balanceUserService.createCoinUser(balanceUserCreateRequest);
         return userMapper.toUserResponse(user);
     }
 

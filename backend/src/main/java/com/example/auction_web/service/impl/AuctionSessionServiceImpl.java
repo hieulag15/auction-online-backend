@@ -14,12 +14,14 @@ import com.example.auction_web.exception.AppException;
 import com.example.auction_web.exception.ErrorCode;
 import com.example.auction_web.mapper.AuctionSessionMapper;
 import com.example.auction_web.mapper.UserMapper;
+import com.example.auction_web.personalization.service.EmbeddingService;
 import com.example.auction_web.repository.*;
 import com.example.auction_web.repository.auth.UserRepository;
 import com.example.auction_web.service.AssetService;
 import com.example.auction_web.service.AuctionSessionService;
 import com.example.auction_web.service.specification.AuctionSessionSpecification;
 import com.example.auction_web.service.specification.RelatedSessionSpecification;
+import com.example.auction_web.utils.VectorUtil;
 import com.example.auction_web.utils.Quataz.SessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -47,6 +49,7 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
     AssetService assetService;
     SessionService sessionService;
     RegisterSessionRepository registerSessionRepository;
+    EmbeddingService embeddingService;
 
     public AuctionSessionResponse createAuctionSession(AuctionSessionCreateRequest request) {
         var auctionSession = auctionSessionMapper.toAuctionItem(request);
@@ -59,6 +62,22 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
         Asset asset = assetRepository.findById(request.getAssetId()).orElseThrow(() -> new AppException(ErrorCode.ASSET_NOT_EXISTED));
         asset.setStatus(ASSET_STATUS.ONGOING.toString());
         assetRepository.save(asset);
+
+        String text = auctionSession.getName();
+        if (asset != null) {
+            text += " " + asset.getAssetName();
+            if (asset.getType() != null && asset.getType().getCategory() != null) {
+                text += " " + asset.getType().getCategory().getCategoryName();
+            }
+        }
+        
+        if (!text.isBlank()) {
+            List<Float> vector = embeddingService.getEmbeddingFromText(text);
+            if (vector != null && !vector.isEmpty()) {
+                String json = VectorUtil.toJson(vector);
+                auctionSession.setVectorJson(json);
+            }
+        }
 
         AuctionSessionResponse response = auctionSessionMapper.toAuctionItemResponse(auctionSessionRepository.save(auctionSession));
 

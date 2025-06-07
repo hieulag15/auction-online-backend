@@ -15,7 +15,9 @@ import com.example.auction_web.entity.chat.Message;
 import com.example.auction_web.exception.AppException;
 import com.example.auction_web.exception.ErrorCode;
 import com.example.auction_web.mapper.AuctionSessionMapper;
+import com.example.auction_web.mapper.BalanceUserMapper;
 import com.example.auction_web.mapper.UserMapper;
+import com.example.auction_web.repository.BalanceUserRepository;
 import com.example.auction_web.repository.auth.RoleRepository;
 import com.example.auction_web.repository.auth.UserRepository;
 import com.example.auction_web.repository.chat.ConversationRepository;
@@ -61,7 +63,8 @@ public class UserServiceImpl implements UserService {
     FileUploadService fileUploadService;
     MessageRepository messageRepository;
     ConversationRepository conversationRepository;
-    BalanceUserService balanceUserService;
+    BalanceUserRepository balanceUserRepository;
+    BalanceUserMapper balanceUserMapper;
 
     EmailVerificationTokenService emailVerificationTokenService;
 
@@ -86,7 +89,7 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getUserId())
                 .accountBalance(BigDecimal.valueOf(0))
                 .build();
-        balanceUserService.createCoinUser(balanceUserCreateRequest);
+        balanceUserRepository.save(balanceUserMapper.toBalanceUser(balanceUserCreateRequest));
         return userMapper.toUserResponse(user);
     }
 

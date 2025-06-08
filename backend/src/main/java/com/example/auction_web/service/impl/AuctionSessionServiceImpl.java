@@ -25,6 +25,8 @@ import com.example.auction_web.utils.VectorUtil;
 import com.example.auction_web.utils.Quataz.SessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,6 +41,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
+@Slf4j
 public class AuctionSessionServiceImpl implements AuctionSessionService {
     AuctionSessionRepository auctionSessionRepository;
     UserRepository userRepository;
@@ -52,17 +55,41 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
     EmbeddingService embeddingService;
 
     public AuctionSessionResponse createAuctionSession(AuctionSessionCreateRequest request) {
-        var auctionSession = auctionSessionMapper.toAuctionItem(request);
-        auctionSession.setAuctionSessionId(UUID.randomUUID().toString());
+        // Kiểm tra asset
+        Asset asset = assetRepository.findById(request.getAssetId())
+                .orElseThrow(() -> new AppException(ErrorCode.ASSET_NOT_EXISTED));
+
+        // Kiểm tra session đã tồn tại chưa
+        AuctionSession existingSession = auctionSessionRepository
+                .getAuctionSessionByAsset_AssetId(request.getAssetId());
+
+        if (existingSession != null) {
+            // Nếu đã tồn tại thì gọi update
+            AuctionSessionUpdateRequest updateRequest = AuctionSessionUpdateRequest.builder()
+                    .typeSession(request.getTypeSession())
+                    .name(request.getName())
+                    .description(request.getDescription())
+                    .startTime(request.getStartTime())
+                    .endTime(request.getEndTime())
+                    .bidIncrement(request.getBidIncrement())
+                    .depositAmount(request.getDepositAmount())
+                    .status(AUCTION_STATUS.UPCOMING.toString())
+                    .build();
+
+            return updateAuctionSession(existingSession.getAuctionSessionId(), updateRequest);
+        }
+
+        // Nếu chưa tồn tại -> Tạo mới
+        AuctionSession auctionSession = auctionSessionMapper.toAuctionItem(request);
         setAuctionSessionReference(request, auctionSession);
 
         auctionSession.setStartTime(request.getStartTime().plusHours(7));
         auctionSession.setEndTime(request.getEndTime().plusHours(7));
 
-        Asset asset = assetRepository.findById(request.getAssetId()).orElseThrow(() -> new AppException(ErrorCode.ASSET_NOT_EXISTED));
         asset.setStatus(ASSET_STATUS.ONGOING.toString());
         assetRepository.save(asset);
 
+        // Embedding
         String text = auctionSession.getName();
         if (asset != null) {
             text += " " + asset.getAssetName();
@@ -70,23 +97,20 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
                 text += " " + asset.getType().getCategory().getCategoryName();
             }
         }
-        
+
         if (!text.isBlank()) {
             List<Float> vector = embeddingService.getEmbeddingFromText(text);
             if (vector != null && !vector.isEmpty()) {
-                String json = VectorUtil.toJson(vector);
-                auctionSession.setVectorJson(json);
+                auctionSession.setVectorJson(VectorUtil.toJson(vector));
             }
         }
 
-        AuctionSessionResponse response = auctionSessionMapper.toAuctionItemResponse(auctionSessionRepository.save(auctionSession));
+        AuctionSession savedSession = auctionSessionRepository.save(auctionSession);
+        AuctionSessionResponse response = auctionSessionMapper.toAuctionItemResponse(savedSession);
 
-        LocalDateTime startTime = auctionSession.getStartTime();
-        LocalDateTime endTime = auctionSession.getEndTime();
+        sessionService.scheduleAuctionSessionStart(savedSession.getAuctionSessionId(), savedSession.getStartTime());
+        sessionService.scheduleAuctionSessionEnd(savedSession.getAuctionSessionId(), savedSession.getEndTime());
 
-
-        sessionService.scheduleAuctionSessionStart(response.getAuctionSessionId(), startTime);
-        sessionService.scheduleAuctionSessionEnd(response.getAuctionSessionId(), endTime);
         return response;
     }
 
@@ -126,7 +150,7 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
             }
 
             if (auctionSessionInfoResponse.get(0).getUserId() != null) {
-                auctionSessionInfoResponse.get(0).setUser(userMapper.toUserResponse(userRepository.findById(auctionSessionInfoResponse.get(0).getUserId()).get()));
+                auctionSessionInfoResponse.get(0).setUser(userRepository.findUserInfoBaseByUserId(auctionSessionInfoResponse.get(0).getUserId()));
             } else {
                 auctionSessionInfoResponse.get(0).setUser(null);
             }
@@ -151,7 +175,7 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
             }
 
             if (auctionSessionInfoResponse.get(0).getUserId() != null) {
-                auctionSessionInfoResponse.get(0).setUser(userMapper.toUserResponse(userRepository.findById(auctionSessionInfoResponse.get(0).getUserId()).get()));
+                auctionSessionInfoResponse.get(0).setUser(userRepository.findUserInfoBaseByUserId(auctionSessionInfoResponse.get(0).getUserId()));
             } else {
                 auctionSessionInfoResponse.get(0).setUser(null);
             }
@@ -187,7 +211,7 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
                         }
 
                         if (auctionSessionInfoResponse.get(0).getUserId() != null) {
-                            auctionSessionInfoResponse.get(0).setUser(userMapper.toUserResponse(userRepository.findById(auctionSessionInfoResponse.get(0).getUserId()).get()));
+                            auctionSessionInfoResponse.get(0).setUser(userRepository.findUserInfoBaseByUserId(auctionSessionInfoResponse.get(0).getUserId()));
                         } else {
                             auctionSessionInfoResponse.get(0).setUser(null);
                         }
@@ -235,7 +259,7 @@ public class AuctionSessionServiceImpl implements AuctionSessionService {
                         }
 
                         if (auctionSessionInfoResponse.get(0).getUserId() != null) {
-                            auctionSessionInfoResponse.get(0).setUser(userMapper.toUserResponse(userRepository.findById(auctionSessionInfoResponse.get(0).getUserId()).get()));
+                            auctionSessionInfoResponse.get(0).setUser(userRepository.findUserInfoBaseByUserId(auctionSessionInfoResponse.get(0).getUserId()));
                         } else {
                             auctionSessionInfoResponse.get(0).setUser(null);
                         }

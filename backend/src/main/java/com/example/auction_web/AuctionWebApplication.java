@@ -5,11 +5,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.TimeZone;
+
 @SpringBootApplication
 @EnableScheduling
 public class AuctionWebApplication {
 
 	public static void main(String[] args) {
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
 //		Dotenv dotenv = Dotenv.load();
 //		// Azure Chat Completion
 //		System.setProperty("AZURE_API_KEY", dotenv.get("AZURE_API_KEY"));

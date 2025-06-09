@@ -159,7 +159,7 @@ public class OpenAIService {
 
         // Azure URL format:
         String url = String.format(
-                "%s/openai/deployments/%s/chat/completions?api-version=2024-02-15-preview",
+                "%s/openai/deployments/%s/chat/completions?api-version=2025-01-01-preview",
                 azureEndpoint, deploymentName
         );
 

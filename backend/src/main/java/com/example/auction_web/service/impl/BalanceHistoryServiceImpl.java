@@ -6,6 +6,7 @@ import com.example.auction_web.dto.request.BillCreateRequest;
 import com.example.auction_web.dto.request.SessionWinnerCreateRequest;
 import com.example.auction_web.dto.request.notification.NotificationRequest;
 import com.example.auction_web.dto.response.BalanceHistoryResponse;
+import com.example.auction_web.dto.response.BalanceSumaryResponse;
 import com.example.auction_web.dto.response.BalanceUserResponse;
 import com.example.auction_web.entity.Asset;
 import com.example.auction_web.entity.AuctionSession;
@@ -78,6 +79,13 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService {
         BalanceUser balanceUser = balanceUserRepository.findById(balanceUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.BALANCE_USER_NOT_EXISTED));
         return balanceHistoryRepository.findBalanceHistoriesByBalanceUser_BalanceUserId(balanceUser.getBalanceUserId()).stream()
+                .map(balanceHistoryMapper::toBalanceHistoryResponse)
+                .toList();
+    }
+
+    public List<BalanceHistoryResponse> getAllBalanceHistoriesByBalanceUserAdmin() {
+        var admin = userMapper.toUserResponse(userRepository.findUserByEmail(EMAIL_ADMIN));
+        return balanceHistoryRepository.findBalanceHistoriesByBalanceUser_User_UserIdOrderByCreatedAtDesc(admin.getUserId()).stream()
                 .map(balanceHistoryMapper::toBalanceHistoryResponse)
                 .toList();
     }
@@ -320,5 +328,9 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService {
     User getUser(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
+    public List<BalanceSumaryResponse> getBalanceSumaries(String balanceUserId, LocalDateTime startDate, LocalDateTime endDate) {
+        return balanceHistoryRepository.getBalanceSummaryByDateRangeAndUser(balanceUserId, startDate, endDate);
     }
 }

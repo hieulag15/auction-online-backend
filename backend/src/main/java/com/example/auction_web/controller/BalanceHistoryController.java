@@ -3,6 +3,7 @@ package com.example.auction_web.controller;
 import com.example.auction_web.dto.request.PaymentSessionDTO;
 import com.example.auction_web.dto.response.ApiResponse;
 import com.example.auction_web.dto.response.BalanceHistoryResponse;
+import com.example.auction_web.dto.response.BalanceSumaryResponse;
 import com.example.auction_web.service.BalanceHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -61,6 +65,38 @@ public class BalanceHistoryController {
             return ApiResponse.<String>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
                     .message(ex.getMessage())
+                    .build();
+        }
+    }
+
+    @GetMapping("/balance_history_admin")
+    public ApiResponse<List<BalanceHistoryResponse>> getBalanceHistoryAdmin() {
+        try {
+           return ApiResponse.<List<BalanceHistoryResponse>>builder()
+                   .code(HttpStatus.OK.value())
+                   .result(balanceHistoryService.getAllBalanceHistoriesByBalanceUserAdmin())
+                   .build();
+        } catch (Exception ex) {
+            return ApiResponse.<List<BalanceHistoryResponse>>builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message(ex.getMessage())
+                    .result(Collections.emptyList())
+                    .build();
+        }
+    }
+
+    @GetMapping("/balance_history_summary")
+    public ApiResponse<List<BalanceSumaryResponse>> getSummary(@PathVariable String balanceUserId, @PathVariable String startTime, @PathVariable String endTime) {
+        try {
+            return ApiResponse.<List<BalanceSumaryResponse>>builder()
+                    .code(HttpStatus.OK.value())
+                    .result(balanceHistoryService.getBalanceSumaries(balanceUserId, LocalDateTime.parse(startTime), LocalDateTime.parse(endTime)))
+                    .build();
+        } catch (Exception ex) {
+            return ApiResponse.<List<BalanceSumaryResponse>>builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message(ex.getMessage())
+                    .result(Collections.emptyList())
                     .build();
         }
     }

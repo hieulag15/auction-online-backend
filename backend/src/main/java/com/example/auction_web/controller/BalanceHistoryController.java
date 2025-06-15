@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -90,7 +91,7 @@ public class BalanceHistoryController {
         try {
             return ApiResponse.<List<BalanceSumaryResponse>>builder()
                     .code(HttpStatus.OK.value())
-                    .result(balanceHistoryService.getBalanceSumaries(balanceUserId, LocalDateTime.parse(startTime), LocalDateTime.parse(endTime)))
+                    .result(balanceHistoryService.getBalanceSummary(balanceUserId, LocalDateTime.parse(startTime), LocalDateTime.parse(endTime)))
                     .build();
         } catch (Exception ex) {
             return ApiResponse.<List<BalanceSumaryResponse>>builder()

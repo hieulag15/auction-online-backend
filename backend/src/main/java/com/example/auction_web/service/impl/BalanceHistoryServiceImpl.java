@@ -36,9 +36,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.example.auction_web.utils.TransactionCodeGenerator.generateTransactionCode;
 
@@ -330,7 +332,15 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 
-    public List<BalanceSumaryResponse> getBalanceSumaries(String balanceUserId, LocalDateTime startDate, LocalDateTime endDate) {
-        return balanceHistoryRepository.getBalanceSummaryByDateRangeAndUser(balanceUserId, startDate, endDate);
+    public List<BalanceSumaryResponse> getBalanceSummary(String balanceUserId, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Object[]> rows = balanceHistoryRepository.getBalanceSummaryNative(balanceUserId, startDate, endDate);
+        return rows.stream()
+                .map(row -> new BalanceSumaryResponse(
+                        ((java.sql.Date) row[0]).toLocalDate(),
+                        (String) row[1],
+                        (BigDecimal) row[2]
+                ))
+                .collect(Collectors.toList());
     }
+
 }

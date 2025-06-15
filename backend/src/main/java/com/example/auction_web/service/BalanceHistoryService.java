@@ -3,6 +3,7 @@ package com.example.auction_web.service;
 import com.example.auction_web.dto.response.BalanceHistoryResponse;
 import com.example.auction_web.dto.response.BalanceSumaryResponse;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,5 +14,5 @@ public interface BalanceHistoryService {
     void comletedPaymentSession(String buyerId, String sellerId, String sessionId);
     void cancelSession(String sellerId, String sessionId);
     List<BalanceHistoryResponse> getAllBalanceHistoriesByBalanceUserAdmin();
-    List<BalanceSumaryResponse> getBalanceSumaries(String balanceUserId, LocalDateTime startDate, LocalDateTime endDate);
+    List<BalanceSumaryResponse> getBalanceSummary(String balanceUserId, LocalDateTime startDate, LocalDateTime endDate);
 }

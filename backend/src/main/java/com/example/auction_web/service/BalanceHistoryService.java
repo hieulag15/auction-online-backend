@@ -2,6 +2,7 @@ package com.example.auction_web.service;
 
 import com.example.auction_web.dto.response.BalanceHistoryResponse;
 import com.example.auction_web.dto.response.BalanceSumaryResponse;
+import com.example.auction_web.dto.response.SessionWinnerResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

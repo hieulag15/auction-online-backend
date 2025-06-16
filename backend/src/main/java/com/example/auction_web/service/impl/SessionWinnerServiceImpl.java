@@ -100,6 +100,10 @@ public class SessionWinnerServiceImpl implements SessionWinnerService {
                 .toList();
     }
 
+    public SessionWinnerResponse getSessionWinnerById(String sessionWinnerId) {
+        return sessionWinnerMapper.toSessionWinnerResponse(sessionWinnerRepository.findById(sessionWinnerId).orElseThrow(() -> new AppException(ErrorCode.SESSION_WINNER_NOT_FOUND)));
+    }
+
     // get auction session
     AuctionSession getAuctionSession(String auctionSession) {
         return auctionSessionRepository.findById(auctionSession)

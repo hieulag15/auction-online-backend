@@ -8,6 +8,7 @@ import com.example.auction_web.dto.request.notification.NotificationRequest;
 import com.example.auction_web.dto.response.BalanceHistoryResponse;
 import com.example.auction_web.dto.response.BalanceSumaryResponse;
 import com.example.auction_web.dto.response.BalanceUserResponse;
+import com.example.auction_web.dto.response.SessionWinnerResponse;
 import com.example.auction_web.entity.Asset;
 import com.example.auction_web.entity.AuctionSession;
 import com.example.auction_web.entity.BalanceUser;
@@ -24,8 +25,10 @@ import com.example.auction_web.mapper.*;
 import com.example.auction_web.repository.*;
 import com.example.auction_web.repository.auth.UserRepository;
 import com.example.auction_web.service.BalanceHistoryService;
+import com.example.auction_web.service.SessionWinnerService;
 import com.example.auction_web.service.auth.UserService;
 
+import com.example.auction_web.utils.Quataz.PaymentAutoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -71,6 +74,7 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService {
     AssetRepository assetRepository;
     UserService userService;
     NotificationStompService notificationService;
+    PaymentAutoService paymentAutoService;
 
     private static final BigDecimal TEN_MILLION = new BigDecimal("10000000");
     private static final BigDecimal HUNDRED_MILLION = new BigDecimal("100000000");
@@ -186,6 +190,8 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService {
                 .referenceId(asset.getAssetId())
                 .build();
         notificationService.sendUserNotification(sellerId, notificationRequest);
+
+        paymentAutoService.scheduleRefundPaymentAfter3DayPayment(sessionWinner.getSessionWinnerId(), LocalDateTime.now().plusDays(3));
     }
 
     // Khi người mua xác nhận đã nhận hàng thành công

@@ -15,4 +15,5 @@ public interface SessionWinnerService {
     SessionWinnerResponse getSessionWinnerByAuctionSessionId(String auctionSessionId);
     SessionWinnerResponse updateSessionWinnerStatus(String sessionWinnerId, SESSION_WIN_STATUS status);
     AssetResponse updateAssetStatus(String assetId, ASSET_STATUS status);
+    SessionWinnerResponse getSessionWinnerById(String sessionWinnerId);
 }

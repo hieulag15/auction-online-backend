@@ -8,6 +8,8 @@ import com.example.auction_web.service.BalanceHistoryService;
 import com.example.auction_web.utils.Job.PaymentCancelJob;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -77,5 +79,10 @@ public class PaymentCancelService {
             paymentCancelLog.setStatus(NotificationLog.NotificationStatus.FAILED);
             paymentCancelRepository.save(paymentCancelLog);
         }
+    }
+
+    @EventListener(ContextRefreshedEvent.class)
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        reschedulePendingNotifications();
     }
 }

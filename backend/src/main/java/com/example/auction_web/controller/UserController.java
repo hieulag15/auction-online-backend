@@ -4,6 +4,7 @@ import com.example.auction_web.dto.request.auth.UserCreateRequest;
 import com.example.auction_web.dto.request.auth.UserUpdateRequest;
 import com.example.auction_web.dto.response.ApiResponse;
 import com.example.auction_web.dto.response.auth.UserResponse;
+import com.example.auction_web.dto.response.statistical.UserCountResponse;
 import com.example.auction_web.service.auth.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -96,6 +97,18 @@ public class UserController {
         userService.updateUnreadNotificationCount(userId, count);
         return ApiResponse.<String>builder()
                 .result("Unread notification count updated successfully")
+                .build();
+    }
+
+    @GetMapping("/active/count")
+    ApiResponse<UserCountResponse> countActiveUsers() {
+        long totalCount = userService.countActiveUsers();
+        int currentYear = java.time.Year.now().getValue();
+        long countOfYear = userService.countActiveUsersByYear(currentYear);
+        double growthRate = userService.getUserGrowthRateThisYear();
+        UserCountResponse response = new UserCountResponse(totalCount, countOfYear, growthRate);
+        return ApiResponse.<UserCountResponse>builder()
+                .result(response)
                 .build();
     }
 }

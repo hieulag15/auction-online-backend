@@ -59,9 +59,9 @@ redis:
   password: "dVDInguT3Iw5sP9cpjUPhO4J5QMBfgbm"
 
 cloudinary:
-  cloud-name: "da7ocjpcu"
-  api-key: "243495346747181"
-  api-secret: "bD1q8wkCmh1HV0blM7zyFdrrSVk"
+  cloud-name: ${CLOUD_NAME}
+  api-key: ${CLOUD_KEY}
+  api-secret: ${CLOUD_SECRET}
 
 quartz:
   auto-startup: true

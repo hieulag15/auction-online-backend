@@ -4,6 +4,7 @@ import com.example.auction_web.dto.request.PaymentSessionDTO;
 import com.example.auction_web.dto.response.ApiResponse;
 import com.example.auction_web.dto.response.BalanceHistoryResponse;
 import com.example.auction_web.dto.response.BalanceSumaryResponse;
+import com.example.auction_web.dto.response.statistical.RevenueCountResponse;
 import com.example.auction_web.service.BalanceHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -100,5 +102,18 @@ public class BalanceHistoryController {
                     .result(Collections.emptyList())
                     .build();
         }
+    }
+
+    @GetMapping("/manager/total-revenue")
+    public ApiResponse<RevenueCountResponse> getTotalRevenueByManager() {
+        BigDecimal totalRevenue = balanceHistoryService.getTotalRevenueByManager();
+        int currentYear = java.time.Year.now().getValue();
+        BigDecimal revenueOfYear = balanceHistoryService.getTotalRevenueByManagerAndYear(currentYear);
+        double growthRate = balanceHistoryService.getRevenueGrowthRateThisYear();
+        RevenueCountResponse response = new RevenueCountResponse(totalRevenue, revenueOfYear, growthRate);
+        return ApiResponse.<RevenueCountResponse>builder()
+                .code(HttpStatus.OK.value())
+                .result(response)
+                .build();
     }
 }

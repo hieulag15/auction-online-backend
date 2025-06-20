@@ -349,4 +349,37 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService {
                 .collect(Collectors.toList());
     }
 
+    public BigDecimal getTotalRevenueByManager() {
+        User manager = userRepository.findByUsername("manager")
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        BalanceUser balanceUser = balanceUserRepository.findBalanceUserByUser_UserId(manager.getUserId());
+        if (balanceUser == null) {
+            throw new AppException(ErrorCode.BALANCE_USER_NOT_EXISTED);
+        }
+        return balanceHistoryRepository.getTotalRevenueByActionAndUser(ACTIONBALANCE.ADD, balanceUser.getBalanceUserId());
+    }
+
+    public BigDecimal getTotalRevenueByManagerAndYear(int year) {
+        User manager = userRepository.findByUsername("manager")
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        BalanceUser balanceUser = balanceUserRepository.findBalanceUserByUser_UserId(manager.getUserId());
+        if (balanceUser == null) {
+            throw new AppException(ErrorCode.BALANCE_USER_NOT_EXISTED);
+        }
+        return balanceHistoryRepository.getTotalRevenueByActionAndUserAndYear(ACTIONBALANCE.ADD, balanceUser.getBalanceUserId(), year);
+    }
+
+    public double getRevenueGrowthRateThisYear() {
+        int currentYear = java.time.Year.now().getValue();
+        BigDecimal thisYear = getTotalRevenueByManagerAndYear(currentYear);
+        BigDecimal lastYear = getTotalRevenueByManagerAndYear(currentYear - 1);
+
+        if (lastYear.compareTo(BigDecimal.ZERO) == 0) {
+            return thisYear.compareTo(BigDecimal.ZERO) > 0 ? 100.0 : 0.0;
+        }
+        return thisYear.subtract(lastYear)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(lastYear, 2, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
 }

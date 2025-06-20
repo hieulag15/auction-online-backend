@@ -4,6 +4,7 @@ import com.example.auction_web.dto.response.BalanceHistoryResponse;
 import com.example.auction_web.dto.response.BalanceSumaryResponse;
 import com.example.auction_web.dto.response.SessionWinnerResponse;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,4 +17,7 @@ public interface BalanceHistoryService {
     void cancelSession(String sellerId, String sessionId);
     List<BalanceHistoryResponse> getAllBalanceHistoriesByBalanceUserAdmin();
     List<BalanceSumaryResponse> getBalanceSummary(String balanceUserId, LocalDateTime startDate, LocalDateTime endDate);
+    BigDecimal getTotalRevenueByManager();
+    BigDecimal getTotalRevenueByManagerAndYear(int year);
+    double getRevenueGrowthRateThisYear();
 }
